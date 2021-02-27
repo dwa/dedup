@@ -124,11 +124,11 @@ def list_dups(filepath, min_size, hash_type, block_size):
                 #click.echo(f'hash[{hash_type}]: {hash_res}')
                 dups[hash_res].append(f)
 
-    records = [[(k,
-                 p.resolve().as_posix(),
-                 p.stat().st_size,
-                 format_size(p.stat().st_size))
-                for p in p] for (k,p) in dups.items() if len(p) > 1]
+    records = [[(filehash,
+                 path.resolve().as_posix(),
+                 path.stat().st_size,
+                 format_size(path.stat().st_size))
+                for path in paths] for (filehash, paths) in dups.items() if len(paths) > 1]
 
     if len(records) > 0:
         cols = ['hash', 'file_path', 'size', 'human_size']
