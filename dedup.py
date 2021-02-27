@@ -1,5 +1,3 @@
-from blake3 import blake3
-from xxhash import xxh3_128
 import click
 from click_help_colors import HelpColorsGroup, HelpColorsCommand
 import click_log
@@ -9,7 +7,6 @@ from humanfriendly import parse_size
 
 from tqdm import tqdm
 
-import hashlib
 from pathlib import Path
 
 from collections import defaultdict
@@ -21,6 +18,28 @@ logger = logging.getLogger(__name__)
 click_log.basic_config(logger)
 
 from IPython import embed
+
+available_hashes = {}
+
+try:
+    from hashlib import md5
+    default_hash = 'md5'
+    available_hashes[default_hash] = md5
+except:
+    pass
+try:
+    from blake3 import blake3
+    default_hash = 'blake3'
+    available_hashes[default_hash] = blake3
+
+except:
+    pass
+try:
+    from xxhash import xxh3_128
+    default_hash = 'xxh3'
+    available_hashes[default_hash] = xxh3_128
+except:
+    pass
 
 
 #click_completion.init()
@@ -35,7 +54,7 @@ def cli():
 # FIXME: rewrite this, assume filepath is a Path object:
 # - filepath.open()
 # - check size: do a simple hashing if size < block_size
-def hash_file(filepath, block_size=65536, hex_result=True, hash_constructor=hashlib.md5):
+def hash_file(filepath, block_size=65536, hex_result=True, hash_constructor=md5):
     hasher = hash_constructor()
     with open(filepath,'rb') as f:
         for chunk in iter(lambda: f.read(block_size), b''):
@@ -44,24 +63,36 @@ def hash_file(filepath, block_size=65536, hex_result=True, hash_constructor=hash
     return hasher.hexdigest() if hex_result else hasher.digest()
 
 
+@cli.command()
+@click.argument('filepath', type=click.Path(exists=True))
+@click.option('-h', '--hash-type', type=click.Choice(available_hashes.keys()), default=default_hash, show_default=True)
+@click.option('-b', '--block-size', default='64K', show_default=True) # block-size (adaptive?)
+def hash_me(filepath, hash_type, block_size):
+    '''Don't use this, too much overhead!'''
+    hash_constructor = available_hashes[hash_type]
+
+    blk_sz = parse_size(block_size, binary=True)
+
+    h = hash_file(filepath,
+                  block_size=blk_sz,
+                  hex_result=True,
+                  hash_constructor=hash_constructor)
+
+    print(h)
+
+
 # FIXME: do what it says on the tin
 @cli.command()
 @click.argument('filepath', type=click.Path(exists=True))
 @click.option('-s', '--min-size', default='1', show_default=True)
-@click.option('-h', '--hash-type', type=click.Choice(['md5', 'blake3', 'xxh3']), default='md5', show_default=True)
+@click.option('-h', '--hash-type', type=click.Choice(available_hashes.keys()), default=default_hash, show_default=True)
 @click.option('-b', '--block-size', default='64K', show_default=True) # block-size (adaptive?)
 @click_log.simple_verbosity_option(logger)
 def list_dups(filepath, min_size, hash_type, block_size):
 
-    #filepath, min_size, hash_type
-
     logger.debug(f'hash-type: {hash_type}')
 
-    hash_constructor = hashlib.md5
-    if hash_type == 'blake3':
-        hash_constructor = blake3
-    elif hash_type == 'xxh3':
-        hash_constructor = xxh3_128
+    hash_constructor = available_hashes[hash_type]
 
     min_sz = parse_size(min_size)
 
