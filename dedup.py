@@ -138,6 +138,7 @@ def list_dups(filepath, min_size, hash_type, block_size, debug):
     if debug:
         from IPython import embed
         embed()
+    print(df.to_csv())
 
 if __name__ == '__main__':
     cli()
