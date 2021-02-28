@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 click_log.basic_config(logger)
 
-from IPython import embed
 
 available_hashes = {}
 
@@ -89,8 +88,10 @@ def hash_me(filepath, hash_type, block_size):
 @click.option('-s', '--min-size', default='1', show_default=True)
 @click.option('-h', '--hash-type', type=click.Choice(available_hashes.keys()), default=default_hash, show_default=True)
 @click.option('-b', '--block-size', default='64K', show_default=True) # block-size (adaptive?)
+@click.option('-d', '--debug/--no-debug', default=False, show_default=True) # debug mode
+
 @click_log.simple_verbosity_option(logger)
-def list_dups(filepath, min_size, hash_type, block_size):
+def list_dups(filepath, min_size, hash_type, block_size, debug):
 
     logger.debug(f'hash-type: {hash_type}')
 
@@ -134,8 +135,9 @@ def list_dups(filepath, min_size, hash_type, block_size):
         cols = ['hash', 'file_path', 'size', 'human_size']
         df = (pd.concat(pd.DataFrame.from_records(r, columns=cols) for r in records)
               .sort_values(by='size', ascending=False))
-    embed()
-
+    if debug:
+        from IPython import embed
+        embed()
 
 if __name__ == '__main__':
     cli()
