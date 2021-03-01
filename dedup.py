@@ -2,18 +2,12 @@ import click
 from click_help_colors import HelpColorsGroup, HelpColorsCommand
 import click_log
 #import click_completion
-
 import pandas as pd
 from tabulate import tabulate, tabulate_formats
-
 from humanfriendly import parse_size, format_size
-
 from tqdm import tqdm
-
 from pathlib import Path
-
 from collections import defaultdict
-
 import logging
 
 logger = logging.getLogger(__name__)
