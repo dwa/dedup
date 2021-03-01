@@ -4,6 +4,7 @@ import click_log
 #import click_completion
 
 import pandas as pd
+from tabulate import tabulate, tabulate_formats
 
 from humanfriendly import parse_size, format_size
 
@@ -88,10 +89,11 @@ def hash_me(filepath, hash_type, block_size):
 @click.option('-s', '--min-size', default='1', show_default=True)
 @click.option('-h', '--hash-type', type=click.Choice(available_hashes.keys()), default=default_hash, show_default=True)
 @click.option('-b', '--block-size', default='64K', show_default=True) # block-size (adaptive?)
+@click.option('-f', '--format', type=click.Choice(tabulate_formats), default='plain', show_default=True)
 @click.option('-d', '--debug/--no-debug', default=False, show_default=True) # debug mode
 
 @click_log.simple_verbosity_option(logger)
-def list_dups(filepath, min_size, hash_type, block_size, debug):
+def list_dups(filepath, min_size, hash_type, block_size, format, debug):
 
     logger.debug(f'hash-type: {hash_type}')
 
@@ -138,7 +140,7 @@ def list_dups(filepath, min_size, hash_type, block_size, debug):
     if debug:
         from IPython import embed
         embed()
-    print(df.to_csv())
+    print(tabulate(df, headers=df.columns, tablefmt=format, showindex=False))
 
 if __name__ == '__main__':
     cli()
