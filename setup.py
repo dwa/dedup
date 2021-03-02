@@ -22,8 +22,11 @@ setup(name='dedup',
           'click-log',
           'click-help-colors',
           'humanfriendly',
-          'blake3'
+          'pandas',
+          'tabulate'
       ],
+      extras_require={'extra_hash': ['blake3',
+                                     'xxhash']}
       # entry_points='''
       #   [console_scripts]
       #   s=cli:ensure_net
