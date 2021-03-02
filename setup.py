@@ -23,12 +23,13 @@ setup(name='dedup',
           'click-help-colors',
           'humanfriendly',
           'pandas',
+          'tqdm',
           'tabulate'
       ],
       extras_require={'extra_hash': ['blake3',
                                      'xxhash']},
       entry_points='''
         [console_scripts]
-        ddup=dedup.dedup:cli
+        ddup=dedup:cli
       ''',
 )
