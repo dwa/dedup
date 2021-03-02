@@ -9,6 +9,7 @@ from tqdm import tqdm
 from pathlib import Path
 from collections import defaultdict
 import logging
+from itertools import chain
 
 logger = logging.getLogger(__name__)
 
@@ -79,15 +80,16 @@ def hash_me(filepath, hash_type, block_size):
 
 # FIXME: do what it says on the tin
 @cli.command()
-@click.argument('filepath', type=click.Path(exists=True))
+@click.argument('filepaths', nargs=-1, type=click.Path(exists=True))
+@click.option('-x', '--file-suffix', default='*', show_default=True)
 @click.option('-s', '--min-size', default='1', show_default=True)
 @click.option('-h', '--hash-type', type=click.Choice(available_hashes.keys()), default=default_hash, show_default=True)
 @click.option('-b', '--block-size', default='64K', show_default=True) # block-size (adaptive?)
 @click.option('-f', '--format', type=click.Choice(tabulate_formats), default='plain', show_default=True)
+@click.option('--recursive/--no-recursive', default=True, show_default=True)
 @click.option('-d', '--debug/--no-debug', default=False, show_default=True) # debug mode
-
 @click_log.simple_verbosity_option(logger)
-def list_dups(filepath, min_size, hash_type, block_size, format, debug):
+def list_dups(filepaths, file_suffix, min_size, hash_type, block_size, format, recursive, debug):
 
     logger.debug(f'hash-type: {hash_type}')
 
@@ -103,9 +105,10 @@ def list_dups(filepath, min_size, hash_type, block_size, format, debug):
     logger.debug(f'min-size: {min_sz}')
     logger.debug(f'block-size: {blk_sz}')
 
-    p = Path(filepath).expanduser()
+    glob_prefix = '**/' if recursive else ''
+    glob_pattern = f'{glob_prefix}{file_suffix}'
 
-    p1 = p.glob('**/*')
+    p1 = chain(*(Path(fp).expanduser().glob(glob_pattern) for fp in filepaths))
 
     for f in tqdm(p1):
         if f.is_file() and not f.is_symlink():
