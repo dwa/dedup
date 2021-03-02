@@ -127,13 +127,15 @@ def list_dups(filepaths, file_suffix, min_size, hash_type, block_size, format, r
     records = [[(filehash,
                  path.resolve().as_posix(),
                  path.stat().st_size,
-                 format_size(path.stat().st_size))
+                 format_size(path.stat().st_size),
+                 str(path.stat().st_ino) if (path.stat().st_ino, path.stat().st_dev) in hardlinked else None,
+                 str(path.stat().st_dev) if (path.stat().st_ino, path.stat().st_dev) in hardlinked else None)
                 for path in paths] for (filehash, paths) in dups.items() if len(paths) > 1]
 
     if len(records) > 0:
-        cols = ['hash', 'file_path', 'size', 'human_size']
+        cols = ['hash', 'file_path', 'size', 'human_size', 'inode', 'device']
         df = (pd.concat(pd.DataFrame.from_records(r, columns=cols) for r in records)
-              .sort_values(by='size', ascending=False))
+              .sort_values(by=['size', 'inode', 'device'], ascending=False))
     if debug:
         from IPython import embed
         embed()
