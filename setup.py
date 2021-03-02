@@ -26,9 +26,9 @@ setup(name='dedup',
           'tabulate'
       ],
       extras_require={'extra_hash': ['blake3',
-                                     'xxhash']}
-      # entry_points='''
-      #   [console_scripts]
-      #   s=cli:ensure_net
-      # ''',
+                                     'xxhash']},
+      entry_points='''
+        [console_scripts]
+        ddup=dedup.dedup:cli
+      ''',
 )
