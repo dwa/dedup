@@ -78,7 +78,6 @@ def hash_me(filepath, hash_type, block_size):
     print(h)
 
 
-# FIXME: do what it says on the tin
 @cli.command()
 @click.argument('filepaths', nargs=-1, type=click.Path(exists=True))
 @click.option('-x', '--file-suffix', default='*', show_default=True)
